@@ -1,0 +1,44 @@
+:root {
+  --font-body: 'Manrope', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+
+  --theme-bg-base: #f3f6ff;
+  --theme-surface-main: #1a1f34;
+  --theme-surface-soft: #21273e;
+  --theme-surface-deep: #11162b;
+  --theme-border: rgba(173, 205, 255, 0.18);
+  --theme-text-primary: #edf5ff;
+  --theme-text-secondary: #9db0d7;
+  --theme-text-soft: #7f8fb0;
+  --theme-brand: #2ac9ff;
+
+  --theme-shadow-main: 0 24px 70px rgba(7, 12, 27, 0.48);
+}
+
+:root[data-theme='light'] {
+  --theme-bg-base: #ecf1ff;
+  --theme-surface-main: #fdfefe;
+  --theme-surface-soft: #f2f6ff;
+  --theme-surface-deep: #e6edff;
+  --theme-border: rgba(47, 89, 171, 0.17);
+  --theme-text-primary: #122044;
+  --theme-text-secondary: #486497;
+  --theme-text-soft: #5f77a3;
+  --theme-brand: #0096d8;
+
+  --theme-shadow-main: 0 24px 60px rgba(18, 34, 68, 0.2);
+}
+
+:root {
+  --color-app-bg: var(--theme-bg-base);
+  --color-surface: var(--theme-surface-main);
+  --color-surface-soft: var(--theme-surface-soft);
+  --color-surface-hard: var(--theme-surface-deep);
+  --color-border: var(--theme-border);
+  --color-title: var(--theme-text-primary);
+  --color-muted: var(--theme-text-secondary);
+  --color-soft: var(--theme-text-soft);
+  --color-brand: var(--theme-brand);
+
+  --shadow-main: var(--theme-shadow-main);
+}
