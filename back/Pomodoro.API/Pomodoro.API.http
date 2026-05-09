@@ -1,6 +1,58 @@
-@Pomodoro.API_HostAddress = http://localhost:5007
+@PomodoroApiHostAddress = http://localhost:5007
 
-GET {{Pomodoro.API_HostAddress}}/weatherforecast/
+### SESSIONS: get all (skip/take)
+GET {{PomodoroApiHostAddress}}/api/sessions?skip=0&take=20
 Accept: application/json
 
-###
+### SESSIONS: get all (page/pageSize)
+GET {{PomodoroApiHostAddress}}/api/sessions?page=1&pageSize=10
+Accept: application/json
+
+### SESSIONS: create
+POST {{PomodoroApiHostAddress}}/api/sessions
+Content-Type: application/json
+Accept: application/json
+
+{
+	"title": "API session",
+	"totalSeconds": 5400,
+	"color": "#1ec8bc",
+	"timerSettings": {
+		"focusMinutes": 25,
+		"shortBreakMinutes": 5,
+		"longBreakMinutes": 10,
+		"cycles": 3
+	}
+}
+
+> {%
+	client.global.set("sessionId", response.body.id);
+%}
+
+### SESSIONS: get by id
+GET {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
+Accept: application/json
+
+### SESSIONS: update
+PUT {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+	"title": "API session updated",
+	"elapsedSeconds": 1200,
+	"totalSeconds": 5400,
+	"color": "#3e7bea",
+	"timerSettings": {
+		"focusMinutes": 30,
+		"shortBreakMinutes": 5,
+		"longBreakMinutes": 10,
+		"cycles": 4
+	},
+	"dailyLog": {
+		"2026-05-09": 1200
+	}
+}
+
+### SESSIONS: delete
+DELETE {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
