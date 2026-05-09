@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Pomodoro.Services\Pomodoro.Services.csproj" />
+        <ProjectReference Include="..\Pomodoro.Postgres\Pomodoro.Postgres.csproj" />
     </ItemGroup>
 
 </Project>

@@ -25,6 +25,39 @@ public static class SessionMapper
         DailyLog = request.DailyLog?.ToDomainDailyLog() ?? new Dictionary<DateOnly, int>(),
     };
 
+    public static void ApplyTo(this UpdateSessionRequestDto request, Session session)
+    {
+        if (request.Title is not null)
+        {
+            session.Title = request.Title;
+        }
+
+        if (request.ElapsedSeconds.HasValue)
+        {
+            session.ElapsedSeconds = request.ElapsedSeconds.Value;
+        }
+
+        if (request.TotalSeconds.HasValue)
+        {
+            session.TotalSeconds = request.TotalSeconds.Value;
+        }
+
+        if (request.Color is not null)
+        {
+            session.Color = request.Color;
+        }
+
+        if (request.TimerSettings is not null)
+        {
+            session.TimerSettings = request.TimerSettings.ToEntity();
+        }
+
+        if (request.DailyLog is not null)
+        {
+            session.DailyLog = request.DailyLog.ToDomainDailyLog();
+        }
+    }
+
     public static SessionDto ToResponse(this Session session) => new()
     {
         Id = session.Id,
