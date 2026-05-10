@@ -165,6 +165,42 @@ h2 {
   gap: 10px;
 }
 
+.task-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.task-action {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--color-surface-soft) 88%, transparent);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.task-action:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--color-primary) 45%, var(--color-border));
+}
+
+.task-action.danger {
+  color: #ff6b6b;
+  border-color: color-mix(in oklab, #ff6b6b 40%, var(--color-border));
+}
+
+.token-details-panel {
+  padding: 10px 12px;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.token-note {
+  margin: 0;
+}
+
 
 .icon-btn,
 .theme-btn,
@@ -599,6 +635,59 @@ h2 {
 
 .save-btn:hover {
   filter: brightness(1.03);
+}
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in oklab, var(--color-surface-soft) 85%, transparent);
+}
+
+.pagination-btn,
+.pagination-page {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in oklab, var(--color-surface-hard) 70%, transparent);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled),
+.pagination-page:hover:not(.active) {
+  border-color: color-mix(in oklab, var(--color-brand) 45%, var(--color-border));
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination-page.active {
+  border-color: color-mix(in oklab, var(--color-brand) 55%, var(--color-border));
+  background: color-mix(in oklab, var(--color-brand) 22%, var(--color-surface-hard));
+  color: var(--color-title);
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 700px) {

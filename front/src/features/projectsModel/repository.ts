@@ -1,154 +1,109 @@
-import { defaultTimerSettings } from './constants'
-import { parseDurationToSeconds } from './time'
-import type { Session, TimerSettings } from './types'
+import type { Session } from './types'
+
+export type CreateSessionPayload = Pick<Session, 'title' | 'totalSeconds' | 'color' | 'timerSettings'>
+
+export type TokenRequestPayload = {
+  subject?: string
+  permissions: string[]
+}
+
+export type TokenResponse = {
+  token: string
+  expiresAt: string
+}
 
 export type ProjectsRepository = {
-  loadSessions: () => Promise<Session[]>
-  saveSessions: (sessions: Session[]) => Promise<void>
+  loadSessions: (skip?: number, take?: number) => Promise<{ items: Session[]; total: number }>
+  createSession: (payload: CreateSessionPayload) => Promise<Session>
+  updateSession: (sessionId: string, patch: Partial<Session>) => Promise<Session>
+  deleteSession: (sessionId: string) => Promise<void>
+  requestToken: (payload: TokenRequestPayload) => Promise<TokenResponse>
+  getToken: () => string | null
+  setToken: (token: string | null) => void
 }
 
-const DB_NAME = 'focus-flow-db'
-const DB_VERSION = 1
-const STORE_NAME = 'projects'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5007'
+const TOKEN_KEY = 'pomodoro.jwt'
 
-const isTimerSettings = (value: unknown): value is TimerSettings => {
-  if (!value || typeof value !== 'object') {
-    return false
+const getToken = () => (typeof window === 'undefined' ? null : localStorage.getItem(TOKEN_KEY))
+
+const setToken = (token: string | null) => {
+  if (typeof window === 'undefined') {
+    return
   }
 
-  const candidate = value as Record<string, unknown>
-  return (
-    typeof candidate.focusMinutes === 'number' &&
-    typeof candidate.shortBreakMinutes === 'number' &&
-    typeof candidate.longBreakMinutes === 'number' &&
-    typeof candidate.cycles === 'number'
-  )
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token)
+  } else {
+    localStorage.removeItem(TOKEN_KEY)
+  }
 }
 
-const isLegacySession = (
-  candidate: Record<string, unknown>,
-): candidate is Record<string, unknown> & { elapsed: string; total: string } =>
-  typeof candidate.elapsed === 'string' && typeof candidate.total === 'string'
+const apiFetch = async <T>(
+  path: string,
+  options: RequestInit = {},
+  withAuth = true,
+): Promise<T> => {
+  const headers = new Headers(options.headers)
+  headers.set('Content-Type', 'application/json')
 
-const toSession = (value: unknown): Session | null => {
-  if (!value || typeof value !== 'object') {
-    return null
-  }
-
-  const candidate = value as Record<string, unknown>
-
-  if (typeof candidate.id !== 'string' || typeof candidate.title !== 'string' || typeof candidate.color !== 'string') {
-    return null
-  }
-
-  const timerSettings = isTimerSettings(candidate.timerSettings)
-    ? candidate.timerSettings
-    : defaultTimerSettings
-
-  const dailyLog =
-    candidate.dailyLog && typeof candidate.dailyLog === 'object'
-      ? (candidate.dailyLog as Record<string, number>)
-      : {}
-
-  if (typeof candidate.elapsedSeconds === 'number' && typeof candidate.totalSeconds === 'number') {
-    return {
-      id: candidate.id,
-      title: candidate.title,
-      elapsedSeconds: candidate.elapsedSeconds,
-      totalSeconds: candidate.totalSeconds,
-      color: candidate.color,
-      timerSettings,
-      dailyLog,
+  if (withAuth) {
+    const token = getToken()
+    if (!token) {
+      throw new Error('Missing auth token')
     }
+    headers.set('Authorization', `Bearer ${token}`)
   }
 
-  if (isLegacySession(candidate)) {
-    return {
-      id: candidate.id,
-      title: candidate.title,
-      elapsedSeconds: parseDurationToSeconds(candidate.elapsed),
-      totalSeconds: parseDurationToSeconds(candidate.total),
-      color: candidate.color,
-      timerSettings,
-      dailyLog,
-    }
-  }
-
-  return null
-}
-
-const toPromise = <T>(request: IDBRequest<T>) =>
-  new Promise<T>((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
   })
 
-const openDatabase = () =>
-  new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' })
-      }
-    }
-
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-
-const normalizeSessions = (value: unknown): Session[] => {
-  if (!Array.isArray(value)) {
-    return []
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(text || `Request failed: ${response.status}`)
   }
 
-  return value
-    .map((entry) => toSession(entry))
-    .filter((entry): entry is Session => Boolean(entry))
+  if (response.status === 204) {
+    return undefined as T
+  }
+
+  return (await response.json()) as T
 }
 
-export const indexedDbProjectsRepository: ProjectsRepository = {
-  async loadSessions() {
-    if (typeof window === 'undefined' || !('indexedDB' in window)) {
-      return []
-    }
-
-    const db = await openDatabase()
-
-    try {
-      const tx = db.transaction(STORE_NAME, 'readonly')
-      const store = tx.objectStore(STORE_NAME)
-      const result = await toPromise(store.getAll())
-      return normalizeSessions(result)
-    } finally {
-      db.close()
-    }
+export const apiProjectsRepository: ProjectsRepository = {
+  async loadSessions(skip = 0, take = 10) {
+    return apiFetch<{ items: Session[]; total: number }>(`/api/sessions?skip=${skip}&take=${take}`)
   },
 
-  async saveSessions(sessions) {
-    if (typeof window === 'undefined' || !('indexedDB' in window)) {
-      return
-    }
-
-    const db = await openDatabase()
-
-    try {
-      const tx = db.transaction(STORE_NAME, 'readwrite')
-      const store = tx.objectStore(STORE_NAME)
-
-      store.clear()
-      sessions.forEach((session) => {
-        store.put(session)
-      })
-
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve()
-        tx.onerror = () => reject(tx.error)
-        tx.onabort = () => reject(tx.error)
-      })
-    } finally {
-      db.close()
-    }
+  async createSession(payload) {
+    return apiFetch<Session>('/api/sessions', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
   },
+
+  async updateSession(sessionId, patch) {
+    return apiFetch<Session>(`/api/sessions/${sessionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    })
+  },
+
+  async deleteSession(sessionId) {
+    await apiFetch<void>(`/api/sessions/${sessionId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  async requestToken(payload) {
+    return apiFetch<TokenResponse>('/token', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }, false)
+  },
+
+  getToken,
+  setToken,
 }

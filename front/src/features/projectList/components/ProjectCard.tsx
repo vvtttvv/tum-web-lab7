@@ -8,11 +8,13 @@ type ProjectCardProps = {
   session: Session
   timerInfo: TimerInfo | null
   onPlay: (sessionId: string) => void
+  onEdit: () => void
+  onDelete: () => void
 }
 
 const clampPercent = (value: number) => Math.max(0, Math.min(100, value))
 
-export function ProjectCard({ session, timerInfo, onPlay }: ProjectCardProps) {
+export function ProjectCard({ session, timerInfo, onPlay, onEdit, onDelete }: ProjectCardProps) {
   const todayKey = getTodayKey()
   const workedSeconds = session.dailyLog[todayKey] ?? 0
   const elapsedLabel = formatHoursMinutes(workedSeconds)
@@ -50,7 +52,10 @@ export function ProjectCard({ session, timerInfo, onPlay }: ProjectCardProps) {
               </p>
               <TimerStatus session={session} timerInfo={timerInfo} />
             </div>
-            <span className="task-arrow">›</span>
+            <div className="task-actions">
+              <button className="task-action" type="button" onClick={onEdit}>Edit</button>
+              <button className="task-action danger" type="button" onClick={onDelete}>Delete</button>
+            </div>
           </div>
 
           <div className="task-progress-row">

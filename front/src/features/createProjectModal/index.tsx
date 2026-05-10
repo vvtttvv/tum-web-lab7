@@ -8,9 +8,19 @@ type CreateProjectModalProps = {
   onChange: (patch: Partial<ProjectFormState>) => void
   onClose: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  title?: string
+  submitLabel?: string
 }
 
-export function CreateProjectModal({ open, form, onChange, onClose, onSubmit }: CreateProjectModalProps) {
+export function CreateProjectModal({
+  open,
+  form,
+  onChange,
+  onClose,
+  onSubmit,
+  title = 'New project',
+  submitLabel = 'Save',
+}: CreateProjectModalProps) {
   const [timerOpen, setTimerOpen] = useState(false)
 
   if (!open) {
@@ -35,7 +45,7 @@ export function CreateProjectModal({ open, form, onChange, onClose, onSubmit }: 
     <div className="create-overlay" role="dialog" aria-modal="true" aria-labelledby="create-title">
       <form className="create-modal" onSubmit={onSubmit}>
         <header className="create-header">
-          <h2 id="create-title" className="create-title">New project</h2>
+          <h2 id="create-title" className="create-title">{title}</h2>
           <button type="button" className="close-btn" aria-label="Close form" onClick={onClose}>
             ×
           </button>
@@ -198,7 +208,7 @@ export function CreateProjectModal({ open, form, onChange, onClose, onSubmit }: 
           </div>
         </section>
 
-        <button className="save-btn" type="submit">Save</button>
+        <button className="save-btn" type="submit">{submitLabel}</button>
       </form>
     </div>
   )
