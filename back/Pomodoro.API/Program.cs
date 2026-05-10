@@ -19,6 +19,16 @@ builder.Services.AddApiDocumentation();
 builder.Services.AddServicesLayer();
 builder.Services.AddDatabaseLayer(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontEnd", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
@@ -61,6 +71,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("FrontEnd");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
