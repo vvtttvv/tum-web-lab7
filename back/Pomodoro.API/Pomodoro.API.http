@@ -1,58 +1,77 @@
 @PomodoroApiHostAddress = http://localhost:5007
 
+### TOKEN: create (READ + WRITE)
+POST {{PomodoroApiHostAddress}}/token
+Content-Type: application/json
+Accept: application/json
+
+{
+    "subject": "demo-user",
+    "permissions": ["READ", "WRITE"]
+}
+
+###
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vLXVzZXIiLCJwZXJtaXNzaW9ucyI6WyJSRUFEIiwiV1JJVEUiXSwiZXhwIjoxNzc4NDA1NTMwLCJpc3MiOiJQb21vZG9yby5BUEkiLCJhdWQiOiJQb21vZG9yby5DbGllbnQifQ.OS6I5qL7PYZxlS1FmLQVfODZ34u6ndEBVGdLC4UWV1U
+
 ### SESSIONS: get all (skip/take)
 GET {{PomodoroApiHostAddress}}/api/sessions?skip=0&take=20
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ### SESSIONS: get all (page/pageSize)
 GET {{PomodoroApiHostAddress}}/api/sessions?page=1&pageSize=10
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ### SESSIONS: create
 POST {{PomodoroApiHostAddress}}/api/sessions
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
-	"title": "API session",
-	"totalSeconds": 5400,
-	"color": "#1ec8bc",
-	"timerSettings": {
-		"focusMinutes": 25,
-		"shortBreakMinutes": 5,
-		"longBreakMinutes": 10,
-		"cycles": 3
-	}
+    "title": "API session",
+    "totalSeconds": 5400,
+    "color": "#1ec8bc",
+    "timerSettings": {
+        "focusMinutes": 25,
+        "shortBreakMinutes": 5,
+        "longBreakMinutes": 10,
+        "cycles": 3
+    }
 }
 
 > {%
-	client.global.set("sessionId", response.body.id);
+    client.global.set("sessionId", response.body.id);
 %}
 
 ### SESSIONS: get by id
 GET {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ### SESSIONS: update
 PUT {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
-	"title": "API session updated",
-	"elapsedSeconds": 1200,
-	"totalSeconds": 5400,
-	"color": "#3e7bea",
-	"timerSettings": {
-		"focusMinutes": 30,
-		"shortBreakMinutes": 5,
-		"longBreakMinutes": 10,
-		"cycles": 4
-	},
-	"dailyLog": {
-		"2026-05-09": 1200
-	}
+    "title": "API session updated",
+    "elapsedSeconds": 1200,
+    "totalSeconds": 5400,
+    "color": "#3e7bea",
+    "timerSettings": {
+        "focusMinutes": 30,
+        "shortBreakMinutes": 5,
+        "longBreakMinutes": 10,
+        "cycles": 4
+    },
+    "dailyLog": {
+        "2026-05-09": 1200
+    }
 }
 
 ### SESSIONS: delete
 DELETE {{PomodoroApiHostAddress}}/api/sessions/{{sessionId}}
+Authorization: Bearer {{accessToken}}

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pomodoro.API.DTO.Mappers;
 using Pomodoro.API.DTO.Models;
@@ -19,6 +20,7 @@ public sealed class SessionsController : ControllerBase
         _service = service;
     }
 
+    [Authorize(Policy = "ReadAccess")]
     [HttpGet]
     public async Task<ActionResult<PagedResponseDto<SessionDto>>> GetAll(
         [FromQuery] PagedRequestDto request,
@@ -53,6 +55,7 @@ public sealed class SessionsController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Policy = "ReadAccess")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SessionDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -65,6 +68,7 @@ public sealed class SessionsController : ControllerBase
         return Ok(session.ToResponse());
     }
 
+    [Authorize(Policy = "WriteAccess")]
     [HttpPost]
     public async Task<ActionResult<SessionDto>> Create(
         [FromBody] CreateSessionRequestDto request,
@@ -77,6 +81,7 @@ public sealed class SessionsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
+    [Authorize(Policy = "WriteAccess")]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<SessionDto>> Update(
         Guid id,
@@ -99,6 +104,7 @@ public sealed class SessionsController : ControllerBase
         return Ok(existing.ToResponse());
     }
 
+    [Authorize(Policy = "WriteAccess")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

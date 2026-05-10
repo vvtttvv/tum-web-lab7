@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NSwag.AspNetCore;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 
 namespace Pomodoro.API.Extensions;
 
@@ -10,6 +12,14 @@ public static class ApiDocumentationExtensions
         services.AddOpenApiDocument(options =>
         {
             options.Title = "Pomodoro API";
+            options.AddSecurity("JWT", new OpenApiSecurityScheme
+            {
+                Type = OpenApiSecuritySchemeType.ApiKey,
+                Name = "Authorization",
+                In = OpenApiSecurityApiKeyLocation.Header,
+                Description = "Bearer {token}",
+            });
+            options.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
         });
         return services;
     }
